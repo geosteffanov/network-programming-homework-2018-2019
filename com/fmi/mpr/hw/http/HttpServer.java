@@ -9,6 +9,20 @@ import java.net.Socket;
 public class HttpServer {
     private ServerSocket socket;
 
+    private static class Responses {
+        private static String Welcome() {
+            return "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "	<title></title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "<h2>Welcome</h2>" +
+                    "</body>\n" +
+                    "</html>";
+        }
+    }
+
 
     public HttpServer() throws IOException {
         this.socket = new ServerSocket(8080);
@@ -35,6 +49,7 @@ public class HttpServer {
              PrintStream ps = new PrintStream(client.getOutputStream(), true)) {
 
             String request = read(bis);
+            write(ps, "");
 
             System.out.println(request);
 
@@ -60,6 +75,11 @@ public class HttpServer {
            return request.toString();
     }
 
+    private void write(PrintStream ps, String response) {
+        ps.println("HTTP/1.0 200 OK");
+        ps.println();
+        ps.println(Responses.Welcome());
+    }
 
 
     public static void main(String[] args) throws IOException {
