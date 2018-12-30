@@ -36,6 +36,8 @@ public class HttpServer {
 
             String request = read(bis);
 
+            System.out.println(request);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,7 +57,7 @@ public class HttpServer {
                 }
             }
 
-           return "Success";
+           return request.toString();
     }
 
 
