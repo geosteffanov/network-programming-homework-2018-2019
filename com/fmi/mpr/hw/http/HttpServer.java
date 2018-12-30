@@ -48,14 +48,36 @@ public class HttpServer {
         try (BufferedInputStream bis = new BufferedInputStream(client.getInputStream());
              PrintStream ps = new PrintStream(client.getOutputStream(), true)) {
 
-            String request = read(bis);
-            write(ps, "");
+            String requestString = read(bis);
+
+            String response = HttpServer.Responses.Welcome();
+
+            HttpRequest request = HttpRequest.fromString(requestString);
+
+            switch(request.type) {
+                case GET:
+                    response = handleGetRequest(request);
+                    break;
+                case POST:
+                    response = handlePostRequest(request);
+                    break;
+            }
 
             System.out.println(request);
+
+            write(ps, response);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String handlePostRequest(HttpRequest request) {
+        return HttpServer.Responses.Welcome();
+    }
+
+    private String handleGetRequest(HttpRequest request) {
+        return HttpServer.Responses.Welcome();
     }
 
     private String read(BufferedInputStream bis) throws IOException {
