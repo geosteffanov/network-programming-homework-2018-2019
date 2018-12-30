@@ -1,8 +1,6 @@
 package com.fmi.mpr.hw.http;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -18,6 +16,18 @@ public class HttpServer {
                     "</head>\n" +
                     "<body>\n" +
                     "<h2>Welcome</h2>" +
+                    "</body>\n" +
+                    "</html>";
+        }
+
+        private static String BadRequest() {
+            return "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "	<title></title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "<h2>Bad Request</h2>" +
                     "</body>\n" +
                     "</html>";
         }
@@ -56,27 +66,69 @@ public class HttpServer {
 
             switch(request.type) {
                 case GET:
-                    response = handleGetRequest(request);
+                    handleGetRequest(request, ps, bis);
                     break;
                 case POST:
-                    response = handlePostRequest(request);
+                    handlePostRequest(request, ps, bis);
                     break;
+                case FAVICON:
+                    handleFaviconRequest(request, ps, bis);
+                    break;
+                case INVALID:
+                    handleInvalidRequest(request, ps, bis);
             }
 
             System.out.println(request);
-
-            write(ps, response);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String handlePostRequest(HttpRequest request) {
-        return HttpServer.Responses.Welcome();
+    private void handleInvalidRequest(HttpRequest request, PrintStream ps, BufferedInputStream bis) {
+        StringBuilder response = new StringBuilder();
+        ps.println("HTTP/1.1 404 Not Found");
+        ps.println();
+        ps.println(HttpServer.Responses.BadRequest());
     }
 
-    private String handleGetRequest(HttpRequest request) {
+    private void handleFaviconRequest(HttpRequest request, PrintStream ps, BufferedInputStream bis) {
+        ps.println("HTTP/1.0 200 OK");
+        ps.println();
+        ps.println(HttpServer.Responses.Welcome());
+    }
+
+    private void handlePostRequest(HttpRequest request, PrintStream ps, BufferedInputStream bis) {
+        ps.println("HTTP/1.0 200 OK");
+        ps.println();
+        ps.println(HttpServer.Responses.Welcome());
+    }
+
+    private String handleGetRequest(HttpRequest request, PrintStream ps, BufferedInputStream bis) {
+        String pathPrefix = "com/fmi/mpr/hw/http/";
+        
+        String resourceLocation = pathPrefix + "resources/" + request.resourceType  + "/" + request.resourceName;
+
+        try (FileInputStream fis = new FileInputStream(new File(resourceLocation))) {
+            ps.println("HTTP/1.0 200 OK");
+            ps.println();
+
+            int bytesRead = 0;
+            byte[] buffer = new byte[8192];
+
+            while ((bytesRead = fis.read(buffer, 0, 8192)) > 0) {
+                ps.write(buffer, 0, bytesRead);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            ps.println("HTTP/1.1 404 Not Found");
+            ps.println();
+            ps.println("No such resource: " + request.resourceType + "/" + request.resourceName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            ps.println("HTTP/1.1 500 Internal Server Error");
+        }
+
         return HttpServer.Responses.Welcome();
     }
 
@@ -97,11 +149,6 @@ public class HttpServer {
            return request.toString();
     }
 
-    private void write(PrintStream ps, String response) {
-        ps.println("HTTP/1.0 200 OK");
-        ps.println();
-        ps.println(Responses.Welcome());
-    }
 
 
     public static void main(String[] args) throws IOException {
