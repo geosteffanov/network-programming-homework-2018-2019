@@ -8,18 +8,21 @@ public class HttpRequest {
     public Type type;
     public String resourceType;
     public String resourceName;
+    public String requestString;
+    public byte[] data;
 
-    public HttpRequest(Type type, String resourceType, String resourceName) {
+    public HttpRequest(Type type, String resourceType, String resourceName, String requestString) {
         this.type = type;
         this.resourceType = resourceType;
         this.resourceName = resourceName;
+        this.requestString = requestString;
     }
 
     public static HttpRequest invalid() {
-        return new HttpRequest(Type.INVALID, "", "");
+        return new HttpRequest(Type.INVALID, "", "", "");
     }
     public static HttpRequest favicon() {
-        return new HttpRequest(Type.FAVICON, "", "");
+        return new HttpRequest(Type.FAVICON, "", "", "");
     }
 
     public static HttpRequest fromString(String requestString) throws IllegalArgumentException {
@@ -61,6 +64,10 @@ public class HttpRequest {
         }
 
 
-       return new HttpRequest(type, resourceType, resourceName);
+       return new HttpRequest(type, resourceType, resourceName, requestString);
+    }
+
+    public String toString() {
+        return this.requestString;
     }
 }
