@@ -290,6 +290,5 @@ public class HttpServer {
         HttpServer server = new HttpServer();
 
         server.start();
-
     }
 }
