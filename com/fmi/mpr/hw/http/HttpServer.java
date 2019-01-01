@@ -33,14 +33,26 @@ public class HttpServer {
                     "</html>";
         }
 
-        private static String FileSaved() {
+        private static String NoSuchFile(String resourceType, String filename) {
             return "<!DOCTYPE html>\n" +
                     "<html>\n" +
                     "<head>\n" +
-                    "	<title></title>\n" +
+                    "	<title>Getting file...</title>\n" +
                     "</head>\n" +
                     "<body>\n" +
-                    "<h2>File Saved</h2>" +
+                    "<h2>No such resource: " + resourceType + "/" + filename + "</h2>" +
+                    "</body>\n" +
+                    "</html>";
+        }
+
+        private static String FileSaved(String resourceType, String filename) {
+            return "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "	<title>Posting file...</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "<h2>File /" + resourceType + "/" + filename + " saved...</h2>" +
                     "</body>\n" +
                     "</html>";
         }
@@ -148,10 +160,7 @@ public class HttpServer {
 
             InputStream is = new ByteArrayInputStream(request.data);
 
-            byte[] buffer = new byte[1];
             int totalBytes = 0;
-            int bytesRead = 0;
-            boolean noBody = true;
 
             totalBytes = readUntilBody(is);
 
@@ -162,7 +171,9 @@ public class HttpServer {
                 return;
             }
 
-            buffer = new byte[1024];
+            byte[] buffer = new byte[1024];
+            int bytesRead = 0;
+
             while ((bytesRead = is.read(buffer, 0, 1024)) > 0) {
                 fis.write(buffer, 0, bytesRead);
 
@@ -176,7 +187,7 @@ public class HttpServer {
             e.printStackTrace();
             ps.println("HTTP/1.1 404 Not Found");
             ps.println();
-            ps.println("No such resource: " + request.resourceType + "/" + request.resourceName);
+            ps.println(HttpServer.Responses.NoSuchFile(request.resourceType, request.resourceName));
         } catch (IOException e) {
             e.printStackTrace();
             ps.println("HTTP/1.1 500 Internal Server Error");
@@ -184,7 +195,7 @@ public class HttpServer {
 
         ps.println("HTTP/1.0 200 OK");
         ps.println();
-        ps.println(HttpServer.Responses.FileSaved());
+        ps.println(HttpServer.Responses.FileSaved(request.resourceType, request.resourceName));
     }
 
     private String handleGetRequest(HttpRequest request, PrintStream ps, BufferedInputStream bis) {
@@ -206,7 +217,7 @@ public class HttpServer {
             e.printStackTrace();
             ps.println("HTTP/1.1 404 Not Found");
             ps.println();
-            ps.println("No such resource: " + request.resourceType + "/" + request.resourceName);
+            ps.println(HttpServer.Responses.NoSuchFile(request.resourceType, request.resourceName));
         } catch (IOException e) {
             e.printStackTrace();
             ps.println("HTTP/1.1 500 Internal Server Error");
